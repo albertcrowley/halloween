@@ -1,8 +1,38 @@
+import os
+
 import pygame
 import random
+import numpy as np
+
+from moviepy import VideoFileClip
+from moviepy.config import check
+
+video_map = {}
+video_map[1] = os.path.join("videos", "pikachu.mp4");
+
+def playVideo(button):
+
+    check()
+
+    video_path = video_map[button]
+    print(f"Playing video: {video_path}")
+    if not os.path.exists(video_path):
+        print(f"Video file not found: {video_path}")
+        return
+
+    clip = VideoFileClip(video_path)
+    clip.preview()
+
+    while clip.is_playing:
+        print ("ticking")
+        pygame.time.Clock().tick(60)
+
+
 
 # Initialize pygame
 pygame.init()
+
+
 
 # Screen dimensions
 info = pygame.display.Info()
@@ -37,13 +67,7 @@ while running:
             if event.key == pygame.K_q:
                 running = False
         elif event.type == pygame.JOYBUTTONDOWN or event.type == pygame.JOYHATMOTION:
-            # Draw a random color box at a random location
-            box_width = random.randint(50, 150)
-            box_height = random.randint(50, 150)
-            box_x = random.randint(0, screen_width - box_width)
-            box_y = random.randint(0, screen_height - box_height)
-            random_color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-            pygame.draw.rect(screen, random_color, (box_x, box_y, box_width, box_height))
+            playVideo(1)
 
     # Update the display
     pygame.display.flip()
