@@ -7,26 +7,37 @@ import numpy as np
 from moviepy import VideoFileClip
 from moviepy.config import check
 
-video_map = {}
-video_map[1] = os.path.join("videos", "pikachu.mp4");
+sound_map = {}
+sound_map[0] = os.path.join("sounds", "pikachu.wav");
+sound_map[1] = os.path.join("sounds", "gengar.wav");
 
-def playVideo(button):
+image_map = {}
+image_map[0] = os.path.join("images", "pikachu.jpg");
+image_map[1] = os.path.join("images", "gengar.jpg");
 
-    check()
+MUSIC_END_EVENT = pygame.USEREVENT + 1
 
-    video_path = video_map[button]
-    print(f"Playing video: {video_path}")
-    if not os.path.exists(video_path):
-        print(f"Video file not found: {video_path}")
-        return
+def soundEnded():
+    screen.fill(BLACK)
 
-    clip = VideoFileClip(video_path)
-    clip.preview()
+def playSound(button):
+    if button not in sound_map:
+        print (f"button {button} not found")
+    else:
+        print (f"pressed {button}")
+        effect = pygame.mixer.music.load(sound_map[button])
+        pygame.mixer.music.play(0)
+        pygame.mixer.music.set_endevent(MUSIC_END_EVENT)
 
-    while clip.is_playing:
-        print ("ticking")
-        pygame.time.Clock().tick(60)
+    if button in image_map:
+        original_image = pygame.image.load(image_map[button]).convert()
 
+        # 1. Scale the image to the exact screen size
+        scaled_image = pygame.transform.scale(original_image, screen.get_size())
+
+        # 2. Blit the scaled image
+        screen.blit(scaled_image, (0, 0))
+        pygame.display.flip()
 
 
 # Initialize pygame
@@ -42,6 +53,7 @@ screen_height = info.current_h
 # Colors
 BLACK = (0, 0, 0)
 
+#screen = pygame.display.set_mode((800, 600))  # Use a standard window size of 800x600
 # Create a fullscreen display
 screen = pygame.display.set_mode((screen_width, screen_height), pygame.FULLSCREEN)
 pygame.display.set_caption("Joystick Color Boxes")
@@ -67,7 +79,9 @@ while running:
             if event.key == pygame.K_q:
                 running = False
         elif event.type == pygame.JOYBUTTONDOWN or event.type == pygame.JOYHATMOTION:
-            playVideo(1)
+            playSound(event.button)
+        elif event.type == MUSIC_END_EVENT:
+            soundEnded()
 
     # Update the display
     pygame.display.flip()
