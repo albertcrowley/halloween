@@ -325,6 +325,7 @@ def showImage(file_name, fade_in=True, new_image = True):
             screen.fill(BLACK)
             new_surface.set_alpha(alpha)
             screen.blit(new_surface, (0, 0))
+            draw_arrows()
             pygame.display.flip()
             pygame.time.delay(FADE_TIME // 51)  # Distribute fade time evenly
 
@@ -332,6 +333,7 @@ def showImage(file_name, fade_in=True, new_image = True):
         screen.fill(BLACK)
         if fade_in:
             screen.blit(scaled_image, (x_pos, y_pos))
+            draw_arrows()
             pygame.display.flip()
 
     except pygame.error as e:
@@ -341,7 +343,46 @@ def showImage(file_name, fade_in=True, new_image = True):
         pygame.display.flip()
         return
 
+def draw_arrows():
+    # Get the current screen dimensions
+    screen_width, screen_height = screen.get_size()
 
+    # Arrow properties
+    arrow_color = (255, 165, 0)  # Orange in RGB
+    arrow_width = 40  # Thickness of arrow lines
+    arrow_length = 100  # Length of the main arrow body
+    head_size = 50  # Size of arrow head
+
+    # Vertical position (middle of screen)
+    y_pos = screen_height // 2
+
+    # Left arrow
+    # Main body
+    pygame.draw.line(screen, arrow_color,
+                     (100 + arrow_length, y_pos),
+                     (100, y_pos),
+                     arrow_width)
+    # Arrow head
+    x_basis = 100 - arrow_length // 2
+    pygame.draw.polygon(screen, arrow_color, [
+        (x_basis, y_pos),
+        (x_basis + head_size, y_pos - head_size),
+        (x_basis + head_size, y_pos + head_size)
+    ])
+
+    # Right arrow
+    # Main body
+    pygame.draw.line(screen, arrow_color,
+                     (screen_width - 100 - arrow_length, y_pos),
+                     (screen_width - 100, y_pos),
+                     arrow_width)
+    # Arrow head
+    x_basis = screen_width - 100 + arrow_length // 2
+    pygame.draw.polygon(screen, arrow_color, [
+        (x_basis, y_pos),
+        (x_basis - head_size, y_pos - head_size),
+        (x_basis - head_size, y_pos + head_size)
+    ])
 
 # Initialize pygame
 pygame.init()
