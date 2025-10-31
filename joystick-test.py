@@ -51,16 +51,24 @@ answer_map = []
 
 
 
-real_questions.append({"image": "images/pokemon-kpop.jpeg", "left": "pokemon", "right": "kpop",  "sound_right": "sounds/sound1.mp3", "sound_left": "sounds/sound2.mp3", "right_next": 1, "left_next": 1, "end_image_left": "images/pokemon-end.png", "end_image_right": "images/kpop-end.png"})
-real_questions.append({"image": "images/chocolate-chewy.png", "left": "chocolate", "right": "chewy", "sound_right": "sounds/sound3.mp3", "sound_left": "sounds/sound4.mp3", "left_next": 3, "right_next": 2})
-real_questions.append({"image": "images/fruit-sour.jpeg", "left": "fruit", "right": "sour", "sound_right": "sounds/sound5.mp3", "sound_left": "sounds/sound6.mp3", "right_next": DONE, "left_next": DONE})
-real_questions.append({"image": "images/nuts.jpeg", "left": "peanut", "right": "no-nuts", "sound_right": "sounds/sound7.mp3", "sound_left": "sounds/sound8.mp3", "right_next": DONE, "left_next": DONE})
+real_questions.append({"image": "images/a-pokepop.jpg", "left": "pokemon", "right": "kpop",  "sound_right": "sounds/sound1.mp3", "sound_left": "sounds/sound2.mp3", "right_next": 1, "left_next": 1, "end_image_left": "images/pokemon-end.png", "end_image_right": "images/kpop-end.png"})
+real_questions.append({"image": "images/a-chewycrunchy.jpg", "left": "chocolate", "right": "chewy", "sound_right": "sounds/sound3.mp3", "sound_left": "sounds/sound4.mp3", "left_next": 3, "right_next": 2})
+real_questions.append({"image": "images/a-soursweet.jpg", "left": "sour", "right": "sweet", "sound_right": "sounds/sound5.mp3", "sound_left": "sounds/sound6.mp3", "right_next": DONE, "left_next": DONE})
+real_questions.append({"image": "images/a-peanut.jpg", "left": "peanut", "right": "no-nuts", "sound_right": "sounds/sound7.mp3", "sound_left": "sounds/sound8.mp3", "right_next": DONE, "left_next": DONE})
 
-random_questions.append({"image": "images/random1.png", "right": "rand-right", "left": "rand-left", "sound_right": "sounds/sound1.mp3", "sound_left": "sounds/sound2.mp3", "right_next": 1, "left_next": 1})
-random_questions.append({"image": "images/random2.png", "right": "rand-right", "left": "rand-left", "sound_right": "sounds/sound1.mp3", "sound_left": "sounds/sound2.mp3", "right_next": 1, "left_next": 1})
-random_questions.append({"image": "images/random3.png", "right": "rand-right", "left": "rand-left", "sound_right": "sounds/sound1.mp3", "sound_left": "sounds/sound2.mp3", "right_next": 1, "left_next": 1})
-random_questions.append({"image": "images/random4.png", "right": "rand-right", "left": "rand-left", "sound_right": "sounds/sound1.mp3", "sound_left": "sounds/sound2.mp3", "right_next": 1, "left_next": 1})
-random_questions.append({"image": "images/random5.png", "right": "rand-right", "left": "rand-left", "sound_right": "sounds/sound1.mp3", "sound_left": "sounds/sound2.mp3", "right_next": 1, "left_next": 1})
+random_questions.append({"image": "images/Slide4.JPG"})
+random_questions.append({"image": "images/Slide5.JPG"})
+random_questions.append({"image": "images/Slide6.JPG"})
+random_questions.append({"image": "images/Slide7.JPG"})
+random_questions.append({"image": "images/Slide8.JPG"})
+random_questions.append({"image": "images/Slide9.JPG"})
+random_questions.append({"image": "images/Slide10.JPG"})
+random_questions.append({"image": "images/Slide11.JPG"})
+random_questions.append({"image": "images/Slide12.JPG"})
+random_questions.append({"image": "images/Slide13.JPG"})
+random_questions.append({"image": "images/Slide14.JPG"})
+random_questions.append({"image": "images/Slide15.JPG"})
+random_questions.append({"image": "images/Slide16.JPG"})
 
 button_sound_bank = []
 button_sound_bank.append("sounds/level-up.mp3")
