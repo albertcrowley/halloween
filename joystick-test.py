@@ -17,6 +17,8 @@ QUESTION_DELAY = 500
 END_DELAY = 1000
 SCREEN_SIZE = (1920, 1080)
 
+global is_fullscreen
+
 
 # real_questions and random questions are both arrays  that contains hashmaps with the following elements:
 # image -> path to image we show that asks the question
@@ -51,6 +53,7 @@ def game_loop():
     global real_questions
     global random_questions
     global used_random_questions
+    global is_fullscreen
     used_random_questions = []  # Reset the list of used random questions
     # this records the answers that were given to the real questions
     # the key to the array will match the key to the real_questions array and the value will be the answer they chose
@@ -70,6 +73,17 @@ def game_loop():
                 if event.key == pygame.K_q:
                     return False
                     break;
+                elif event.key == pygame.K_f:
+                    is_fullscreen = not is_fullscreen
+                    if is_fullscreen:
+                        # Store current window size before going fullscreen
+                        windowed_size = screen.get_size()
+                        screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+                    else:
+                        # Return to windowed mode with previous size
+                        screen = pygame.display.set_mode(windowed_size, pygame.RESIZABLE)
+                    # Redraw the current image at the new size
+                    showImage(question["image"])
                 elif event.key == pygame.K_LEFT:
                     answer_map.append(question["left"])
                     playSound(question["sound_left"])
@@ -226,7 +240,8 @@ BLACK = (0, 0, 0)
 screen = pygame.display.set_mode(SCREEN_SIZE, pygame.RESIZABLE)  # Use a standard window size of 800x600
 # Create a fullscreen display
 #screen = pygame.display.set_mode((screen_width, screen_height), pygame.FULLSCREEN)
-pygame.display.set_caption("Joystick Color Boxes")
+pygame.display.set_caption("Happy Halloween")
+is_fullscreen = False
 
 # Joystick initialization
 pygame.joystick.init()
