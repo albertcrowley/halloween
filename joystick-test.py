@@ -13,6 +13,7 @@ MUSIC_END_EVENT = pygame.USEREVENT + 1
 DONE = -1
 ANSWER_FILE = "answers.txt"
 LOG_FILE = "log.txt"
+DEBOUNCE_TIME = 1000
 QUESTION_DELAY = 500
 END_DELAY = 1000
 SCREEN_SIZE = (1920, 1080)
@@ -25,8 +26,11 @@ PROCEED = "PROCEED"
 
 global is_fullscreen
 global windowed_size
+global last_input_time
 windowed_size = SCREEN_SIZE  # Initialize windowed size
 is_fullscreen = False
+last_input_time = 0
+
 
 # real_questions and random questions are both arrays  that contains hashmaps with the following elements:
 # image -> path to image we show that asks the question
@@ -56,14 +60,19 @@ random_questions.append({"image": "images/random3.png", "right": "rand-right", "
 random_questions.append({"image": "images/random4.png", "right": "rand-right", "left": "rand-left", "sound_right": "sounds/sound1.mp3", "sound_left": "sounds/sound2.mp3", "right_next": 1, "left_next": 1})
 random_questions.append({"image": "images/random5.png", "right": "rand-right", "left": "rand-left", "sound_right": "sounds/sound1.mp3", "sound_left": "sounds/sound2.mp3", "right_next": 1, "left_next": 1})
 
+
 def wait_for_input(current_image_path):
     """
-    Waits for user input (LEFT, RIGHT, f, q).
+    Waits for user input (LEFT, RIGHT, f, q) with debouncing across screens.
     Handles fullscreen toggling and quitting.
     Returns LEFT, RIGHT, or QUIT.
+    Implements debouncing with DEBOUNCE_TIME milliseconds that persists across screens.
     """
-    global screen, is_fullscreen, windowed_size
+    global screen, is_fullscreen, windowed_size, last_input_time
+
     while True:
+        current_time = pygame.time.get_ticks()  # Get current time in milliseconds
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return QUIT
@@ -73,19 +82,22 @@ def wait_for_input(current_image_path):
                 elif event.key == pygame.K_f:
                     is_fullscreen = not is_fullscreen
                     if is_fullscreen:
-                        windowed_size = screen.get_size() # Store current size
+                        windowed_size = screen.get_size()
                         screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
                     else:
                         screen = pygame.display.set_mode(windowed_size, pygame.RESIZABLE)
-                    showImage(current_image_path) # Redraw
-                elif event.key == pygame.K_LEFT:
-                    return LEFT
-                elif event.key == pygame.K_RIGHT:
-                    return RIGHT
+                    showImage(current_image_path)
+                elif event.key in (pygame.K_LEFT, pygame.K_RIGHT):
+                    # Check if enough time has passed since last input
+                    if current_time - last_input_time >= DEBOUNCE_TIME:
+                        print (f"cur {current_time} and last {last_input_time} and diff {current_time - last_input_time}")
+                        last_input_time = current_time
+                        print (LEFT if event.key == pygame.K_LEFT else RIGHT)
+                        return LEFT if event.key == pygame.K_LEFT else RIGHT
+                    else:
+                        print (f"REJECTED cur {current_time} and last {last_input_time} and diff {current_time - last_input_time}")
             elif event.type == pygame.VIDEORESIZE:
-                # Update the screen size when window is resized
                 screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
-                # Redraw the current image at the new size
                 showImage(current_image_path)
 
 
@@ -181,7 +193,7 @@ def attract_screen():
     showImage("images/attract.png")
     pygame.display.flip()
 
-    action = wait_for_any_key("images/attract.png")
+    action = wait_for_input("images/attract.png")
     if action == QUIT:
         return QUIT
     return PROCEED
@@ -206,13 +218,11 @@ def ask_random():
 
     question = random_questions[question_index]
 
-    print(f"{available_indices} and this time chose {question_index}")
-
     screen.fill(BLACK)
     showImage(question["image"])
     pygame.display.flip()
 
-    action = wait_for_any_key(question["image"])
+    action = wait_for_input(question["image"])
     if action == QUIT:
         return QUIT
 
