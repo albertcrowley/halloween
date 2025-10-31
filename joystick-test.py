@@ -108,13 +108,13 @@ def wait_for_input(current_image_path, sound_path):
             elif event.type == pygame.JOYBUTTONDOWN:
                 # Check if enough time has passed since last input
                 if current_time - last_input_time >= DEBOUNCE_TIME:
+                    print(f"cur {current_time} and last {last_input_time} and diff {current_time - last_input_time}")
+                    last_input_time = current_time
                     if event.button == 0:  # Button 1 (index 0)
-                        last_input_time = current_time
                         if sound_path:
                             playSound(sound_path)
                         return LEFT
                     elif event.button == 1:  # Button 2 (index 1)
-                        last_input_time = current_time
                         if sound_path:
                             playSound(sound_path)
                         return RIGHT
@@ -280,9 +280,9 @@ def log_entry(message):
 
 def show_end_image(end_image):
     screen.fill(BLACK)
-    playSound("sounds/item-received.mp3")
     if end_image:
         showImage(end_image)
+        playSound("sounds/item-received.mp3")
     else:
         screen.fill(BLACK)
     pygame.display.flip()
