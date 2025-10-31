@@ -35,6 +35,8 @@ real_questions.append({"image": "images/gengar.jpg", "right": "peanut", "left": 
 
 
 def game_loop():
+    global screen
+    global real_questions
     # this records the answers that were given to the real questions
     # the key to the array will match the key to the real_questions array and the value will be the answer they chose
     answer_map = []
@@ -58,6 +60,12 @@ def game_loop():
                     answer_map.append(question["right"])
                     playSound(question["sound_right"])
                     question_index = question["right_next"]
+            elif event.type == pygame.VIDEORESIZE:
+                # Update the screen size when window is resized
+                screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
+                # Redraw the current image at the new size
+                showImage(question["image"])
+
 
             if question_index != DONE:
                 break
@@ -99,7 +107,7 @@ screen_height = info.current_h
 # Colors
 BLACK = (0, 0, 0)
 
-screen = pygame.display.set_mode((800, 600))  # Use a standard window size of 800x600
+screen = pygame.display.set_mode((800, 600), pygame.RESIZABLE)  # Use a standard window size of 800x600
 # Create a fullscreen display
 #screen = pygame.display.set_mode((screen_width, screen_height), pygame.FULLSCREEN)
 pygame.display.set_caption("Joystick Color Boxes")
