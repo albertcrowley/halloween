@@ -62,8 +62,15 @@ random_questions.append({"image": "images/random3.png", "right": "rand-right", "
 random_questions.append({"image": "images/random4.png", "right": "rand-right", "left": "rand-left", "sound_right": "sounds/sound1.mp3", "sound_left": "sounds/sound2.mp3", "right_next": 1, "left_next": 1})
 random_questions.append({"image": "images/random5.png", "right": "rand-right", "left": "rand-left", "sound_right": "sounds/sound1.mp3", "sound_left": "sounds/sound2.mp3", "right_next": 1, "left_next": 1})
 
+button_sound_bank = []
+button_sound_bank.append("sounds/level-up.mp3")
+button_sound_bank.append("sounds/soda_pop.mp3")
+button_sound_bank.append("sounds/mmm.mp3")
+button_sound_bank.append("sounds/nintendo-game-boy-startup.mp3")
+button_sound_bank.append("sounds/mario-galaxy.mp3")
+button_sound_bank.append("sounds/arceus.mp3")
 
-def wait_for_input(current_image_path):
+def wait_for_input(current_image_path, sound_path):
     """
     Waits for user input (LEFT, RIGHT, f, q) with debouncing across screens.
     Handles fullscreen toggling and quitting.
@@ -95,15 +102,21 @@ def wait_for_input(current_image_path):
                     if current_time - last_input_time >= DEBOUNCE_TIME:
                         print(f"cur {current_time} and last {last_input_time} and diff {current_time - last_input_time}")
                         last_input_time = current_time
+                        if sound_path:
+                            playSound(sound_path)
                         return LEFT if event.key == pygame.K_LEFT else RIGHT
             elif event.type == pygame.JOYBUTTONDOWN:
                 # Check if enough time has passed since last input
                 if current_time - last_input_time >= DEBOUNCE_TIME:
                     if event.button == 0:  # Button 1 (index 0)
                         last_input_time = current_time
+                        if sound_path:
+                            playSound(sound_path)
                         return LEFT
                     elif event.button == 1:  # Button 2 (index 1)
                         last_input_time = current_time
+                        if sound_path:
+                            playSound(sound_path)
                         return RIGHT
             elif event.type == pygame.VIDEORESIZE:
                 screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
@@ -154,6 +167,9 @@ def game_loop():
     if attract_screen() == QUIT:
         return False
 
+    if instruction_screen() == QUIT:
+        return False
+
     if ask_random() == QUIT:
         return False
 
@@ -162,13 +178,12 @@ def game_loop():
         screen.fill(BLACK)
         showImage(question["image"])
 
-        action = wait_for_input(question["image"])
+        action = wait_for_input(question["image"], button_sound_bank)
 
         if action == QUIT:
             return False
         elif action == LEFT:
             answer_map.append(question["left"])
-            playSound(question["sound_left"])
             question_index = question["left_next"]
             if "end_image_left" in question:
                 end_image = question["end_image_left"]
@@ -178,7 +193,6 @@ def game_loop():
                     return False
         elif action == RIGHT:
             answer_map.append(question["right"])
-            playSound(question["sound_right"])
             question_index = question["right_next"]
             if "end_image_right" in question:
                 end_image = question["end_image_right"]
@@ -201,10 +215,21 @@ def attract_screen():
     showImage("images/attract.png")
     pygame.display.flip()
 
-    action = wait_for_input("images/attract.png")
+    action = wait_for_input("images/attract.png", button_sound_bank)
     if action == QUIT:
         return QUIT
     return PROCEED
+
+def instruction_screen():
+    screen.fill(BLACK)
+    showImage("images/instructions.png")
+    pygame.display.flip()
+
+    action = wait_for_input("images/instructions.png", button_sound_bank)
+    if action == QUIT:
+        return QUIT
+    return PROCEED
+
 
 
 def ask_random():
@@ -230,7 +255,7 @@ def ask_random():
     showImage(question["image"])
     pygame.display.flip()
 
-    action = wait_for_input(question["image"])
+    action = wait_for_input(question["image"], button_sound_bank)
     if action == QUIT:
         return QUIT
 
@@ -255,6 +280,7 @@ def log_entry(message):
 
 def show_end_image(end_image):
     screen.fill(BLACK)
+    playSound("sounds/item-received.mp3")
     if end_image:
         showImage(end_image)
     else:
@@ -274,14 +300,19 @@ def soundEnded():
 
 
 def playSound(file_name):
-    # effect = pygame.mixer.music.load(file_name)
-    # pygame.mixer.music.play(0)
     try:
-        pygame.mixer.Sound(file_name).play()
-    except pygame.error as e:
-        print(f"ERROR: Failed to play sound '{file_name}'. Skipping.")
-        log_entry(f"ERROR: Failed to play sound '{file_name}': {e}")
+        # If file_name is a list/array, randomly select one file
+        if isinstance(file_name, (list, tuple)):
+            if not file_name:  # Check if array is empty
+                return
+            selected_file = random.choice(file_name)
+        else:
+            selected_file = file_name
 
+        pygame.mixer.Sound(selected_file).play()
+    except pygame.error as e:
+        print(f"ERROR: Failed to play sound '{selected_file}'. Skipping.")
+        log_entry(f"ERROR: Failed to play sound '{selected_file}': {e}")
 
 def showImage(file_name, fade_in=True, new_image = True):
     """
