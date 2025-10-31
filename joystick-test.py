@@ -14,7 +14,7 @@ DONE = -1
 ANSWER_FILE = "answers.txt"
 LOG_FILE = "log.txt"
 DEBOUNCE_TIME = 1000
-FADE_TIME = 1000
+FADE_TIME = 500
 END_DELAY = 1000
 SCREEN_SIZE = (1920, 1080)
 
@@ -27,9 +27,11 @@ PROCEED = "PROCEED"
 global is_fullscreen
 global windowed_size
 global last_input_time
+global last_image_displayed
 windowed_size = SCREEN_SIZE  # Initialize windowed size
 is_fullscreen = False
 last_input_time = 0
+last_image_displayed = None
 
 
 # real_questions and random questions are both arrays  that contains hashmaps with the following elements:
@@ -272,12 +274,23 @@ def playSound(file_name):
         log_entry(f"ERROR: Failed to play sound '{file_name}': {e}")
 
 
-def showImage(file_name):
+def showImage(file_name, fade_in=True, new_image = True):
     """
     Loads, scales, and blits an image to the screen while maintaining aspect ratio,
     with fade out/in effects.
     """
     global screen
+    global last_image_displayed
+
+    if not file_name:
+        return
+
+    # we were called to change the image, so first fade out the old one
+    if new_image:
+        showImage(last_image_displayed, fade_in=False, new_image=False)
+
+
+    last_image_displayed = file_name
     try:
         # Load and scale the new image
         original_image = pygame.image.load(file_name).convert()
@@ -300,19 +313,6 @@ def showImage(file_name):
         x_pos = (screen_width - new_width) // 2
         y_pos = (screen_height - new_height) // 2
 
-        # Create a copy of the current screen for fade out
-        old_screen = screen.copy()
-
-        # Fade out
-        for alpha in range(255, 0, -5):  # Gradually decrease alpha
-            screen.fill(BLACK)
-            old_screen.set_alpha(alpha)
-            screen.blit(old_screen, (0, 0))
-            pygame.display.flip()
-            pygame.time.delay(FADE_TIME // 51)  # Distribute fade time evenly
-
-        # Clear the screen
-        screen.fill(BLACK)
 
         # Create a surface for the new image with alpha
         new_surface = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
@@ -320,7 +320,8 @@ def showImage(file_name):
         new_surface.blit(scaled_image, (x_pos, y_pos))
 
         # Fade in
-        for alpha in range(0, 256, 5):  # Gradually increase alpha
+        alphas = range(0, 256, 5) if fade_in else range(256,0,-5)
+        for alpha in alphas:  # Gradually change alpha
             screen.fill(BLACK)
             new_surface.set_alpha(alpha)
             screen.blit(new_surface, (0, 0))
@@ -329,8 +330,9 @@ def showImage(file_name):
 
         # Final display at full alpha
         screen.fill(BLACK)
-        screen.blit(scaled_image, (x_pos, y_pos))
-        pygame.display.flip()
+        if fade_in:
+            screen.blit(scaled_image, (x_pos, y_pos))
+            pygame.display.flip()
 
     except pygame.error as e:
         print(f"ERROR: Failed to load asset '{file_name}'. Skipping image update.")
