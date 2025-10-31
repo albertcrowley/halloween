@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 import pygame
 import random
@@ -10,6 +11,11 @@ from moviepy.config import check
 # constants
 MUSIC_END_EVENT = pygame.USEREVENT + 1
 DONE = -1
+ANSWER_FILE = "answers.txt"
+LOG_FILE = "log.txt"
+QUESTION_DELAY = 500
+END_DELAY = 1000
+
 
 # real_questions and random questions are both arrays  that contains hashmaps with the following elements:
 # image -> path to image we show that asks the question
@@ -28,11 +34,12 @@ answer_map = []
 
 
 
-real_questions.append({"image": "images/pikachu.jpg", "right": "pokemon", "left": "kpop", "sound_right": "sounds/sound1.mp3", "sound_left": "sounds/sound2.mp3", "right_next": 1, "left_next": 1})
-real_questions.append({"image": "images/gengar.jpg", "right": "chocolate", "left": "chewy", "sound_right": "sounds/sound3.mp3", "sound_left": "sounds/sound4.mp3", "right_next": 3, "left_next": 2})
-real_questions.append({"image": "images/pikachu.jpg", "right": "fruit", "left": "sour", "sound_right": "sounds/sound5.mp3", "sound_left": "sounds/sound6.mp3", "right_next": DONE, "left_next": DONE})
-real_questions.append({"image": "images/gengar.jpg", "right": "peanut", "left": "no-nuts", "sound_right": "sounds/sound7.mp3", "sound_left": "sounds/sound8.mp3", "right_next": DONE, "left_next": DONE})
+real_questions.append({"image": "images/pokemon-kpop.png", "left": "pokemon", "right": "kpop",  "sound_right": "sounds/sound1.mp3", "sound_left": "sounds/sound2.mp3", "right_next": 1, "left_next": 1, "end_image_left": "images/pokemon-end.png", "end_image_right": "images/kpop-end.png"})
+real_questions.append({"image": "images/chocolate-chewy.png", "left": "chocolate", "right": "chewy", "sound_right": "sounds/sound3.mp3", "sound_left": "sounds/sound4.mp3", "left_next": 3, "right_next": 2})
+real_questions.append({"image": "images/fruit-sour.png", "left": "fruit", "right": "sour", "sound_right": "sounds/sound5.mp3", "sound_left": "sounds/sound6.mp3", "right_next": DONE, "left_next": DONE})
+real_questions.append({"image": "images/nuts.png", "left": "peanut", "right": "no-nuts", "sound_right": "sounds/sound7.mp3", "sound_left": "sounds/sound8.mp3", "right_next": DONE, "left_next": DONE})
 
+random_questions.append({"image": "images/pokemon-kpop.png", "right": "rand-right", "left": "rand-left", "sound_right": "sounds/sound1.mp3", "sound_left": "sounds/sound2.mp3", "right_next": 1, "left_next": 1})
 
 def game_loop():
     global screen
@@ -41,6 +48,7 @@ def game_loop():
     # the key to the array will match the key to the real_questions array and the value will be the answer they chose
     answer_map = []
     question_index = 0
+    end_image = None
 
     while question_index != DONE:
         question = real_questions[question_index]
@@ -56,10 +64,15 @@ def game_loop():
                     answer_map.append(question["left"])
                     playSound(question["sound_left"])
                     question_index = question["left_next"]
+                    if "end_image_left" in question:
+                        end_image = question["end_image_left"]
                 elif event.key == pygame.K_RIGHT:
                     answer_map.append(question["right"])
                     playSound(question["sound_right"])
                     question_index = question["right_next"]
+                    if "end_image_right" in question:
+                        end_image = question["end_image_right"]
+                update_answers(answer_map)
             elif event.type == pygame.VIDEORESIZE:
                 # Update the screen size when window is resized
                 screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
@@ -70,10 +83,45 @@ def game_loop():
             if question_index != DONE:
                 break
 
+            pygame.time.wait(QUESTION_DELAY)
+
+
 
     print(f"Answer map: {answer_map}")
+    log_entry(f"Answer map: {answer_map}")
+    show_end_image(end_image)
     return True
 
+
+def log_entry(message):
+    """
+    Appends a timestamped log entry to the log file.
+    Args:
+        message: The message to be logged
+    """
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    log_message = f"[{timestamp}] {message}\n"
+
+    try:
+        with open(LOG_FILE, 'a') as f:
+            f.write(log_message)
+    except IOError as e:
+        print(f"Error writing to log file: {e}")
+
+
+def show_end_image(end_image):
+    screen.fill(BLACK)
+    if end_image:
+        showImage(end_image)
+    else:
+        screen.fill(BLACK)
+    pygame.display.flip()
+    pygame.time.wait(END_DELAY)
+
+def update_answers(answer_map):
+    with open(ANSWER_FILE, 'w') as f:
+        for answer in answer_map:
+            f.write(answer + "\n")
 
 def soundEnded():
     screen.fill(BLACK)
@@ -83,15 +131,38 @@ def playSound(file_name):
     # pygame.mixer.music.play(0)
     pygame.mixer.Sound(file_name).play()
 
+
 def showImage(file_name):
-    original_image = pygame.image.load(file_name).convert()
+    """
+    Loads, scales, and blits an image to the screen.
+    Includes error handling for missing or corrupted files.
+    """
+    global screen
+    try:
+        # Attempt to load the image. This is where the crash usually happens.
+        original_image = pygame.image.load(file_name).convert()
 
-    # 1. Scale the image to the exact screen size
-    scaled_image = pygame.transform.scale(original_image, screen.get_size())
+        # 1. Scale the image to the exact screen size
+        scaled_image = pygame.transform.scale(original_image, screen.get_size())
 
-    # 2. Blit the scaled image
-    screen.blit(scaled_image, (0, 0))
-    pygame.display.flip()
+        # 2. Blit the scaled image
+        screen.blit(scaled_image, (0, 0))
+        pygame.display.flip()
+
+    except pygame.error as e:
+        print(f"ERROR: Failed to load asset '{file_name}'. Skipping image update.")
+        screen.fill(BLACK)
+        return  #
+
+# def showImage(file_name):
+#     original_image = pygame.image.load(file_name).convert()
+#
+#     # 1. Scale the image to the exact screen size
+#     scaled_image = pygame.transform.scale(original_image, screen.get_size())
+#
+#     # 2. Blit the scaled image
+#     screen.blit(scaled_image, (0, 0))
+#     pygame.display.flip()
 
 
 # Initialize pygame
