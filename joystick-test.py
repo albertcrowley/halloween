@@ -15,6 +15,7 @@ ANSWER_FILE = "answers.txt"
 LOG_FILE = "log.txt"
 QUESTION_DELAY = 500
 END_DELAY = 1000
+SCREEN_SIZE = (1920, 1080)
 
 
 # real_questions and random questions are both arrays  that contains hashmaps with the following elements:
@@ -39,16 +40,25 @@ real_questions.append({"image": "images/chocolate-chewy.png", "left": "chocolate
 real_questions.append({"image": "images/fruit-sour.png", "left": "fruit", "right": "sour", "sound_right": "sounds/sound5.mp3", "sound_left": "sounds/sound6.mp3", "right_next": DONE, "left_next": DONE})
 real_questions.append({"image": "images/nuts.png", "left": "peanut", "right": "no-nuts", "sound_right": "sounds/sound7.mp3", "sound_left": "sounds/sound8.mp3", "right_next": DONE, "left_next": DONE})
 
-random_questions.append({"image": "images/pokemon-kpop.png", "right": "rand-right", "left": "rand-left", "sound_right": "sounds/sound1.mp3", "sound_left": "sounds/sound2.mp3", "right_next": 1, "left_next": 1})
+random_questions.append({"image": "images/random1.png", "right": "rand-right", "left": "rand-left", "sound_right": "sounds/sound1.mp3", "sound_left": "sounds/sound2.mp3", "right_next": 1, "left_next": 1})
+random_questions.append({"image": "images/random2.png", "right": "rand-right", "left": "rand-left", "sound_right": "sounds/sound1.mp3", "sound_left": "sounds/sound2.mp3", "right_next": 1, "left_next": 1})
+random_questions.append({"image": "images/random3.png", "right": "rand-right", "left": "rand-left", "sound_right": "sounds/sound1.mp3", "sound_left": "sounds/sound2.mp3", "right_next": 1, "left_next": 1})
+random_questions.append({"image": "images/random4.png", "right": "rand-right", "left": "rand-left", "sound_right": "sounds/sound1.mp3", "sound_left": "sounds/sound2.mp3", "right_next": 1, "left_next": 1})
+random_questions.append({"image": "images/random5.png", "right": "rand-right", "left": "rand-left", "sound_right": "sounds/sound1.mp3", "sound_left": "sounds/sound2.mp3", "right_next": 1, "left_next": 1})
 
 def game_loop():
     global screen
     global real_questions
+    global random_questions
+    global used_random_questions
+    used_random_questions = []  # Reset the list of used random questions
     # this records the answers that were given to the real questions
     # the key to the array will match the key to the real_questions array and the value will be the answer they chose
     answer_map = []
     question_index = 0
     end_image = None
+
+    ask_random()
 
     while question_index != DONE:
         question = real_questions[question_index]
@@ -66,12 +76,14 @@ def game_loop():
                     question_index = question["left_next"]
                     if "end_image_left" in question:
                         end_image = question["end_image_left"]
+                    ask_random()
                 elif event.key == pygame.K_RIGHT:
                     answer_map.append(question["right"])
                     playSound(question["sound_right"])
                     question_index = question["right_next"]
                     if "end_image_right" in question:
                         end_image = question["end_image_right"]
+                    ask_random()
                 update_answers(answer_map)
             elif event.type == pygame.VIDEORESIZE:
                 # Update the screen size when window is resized
@@ -92,6 +104,39 @@ def game_loop():
     show_end_image(end_image)
     return True
 
+def ask_random():
+    global real_questions
+    global random_questions
+    global question_index
+    global used_random_questions  # Add this at the start of each game loop
+
+    # If we've used all random questions, reset the used questions list
+    if len(used_random_questions) >= len(random_questions):
+        used_random_questions.clear()
+
+    # Get available indices that haven't been used yet
+    available_indices = [i for i in range(len(random_questions)) if i not in used_random_questions]
+
+    # Select a random index from the available ones
+    question_index = random.choice(available_indices)
+    used_random_questions.append(question_index)  # Mark this index as used
+
+    question = random_questions[question_index]
+
+    print (f"{available_indices} and this time chose {question_index}")
+
+    screen.fill(BLACK)
+    showImage(question["image"])
+    pygame.display.flip()
+    i = 0
+    done = False
+    while not done:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT or event.key == pygame.K_q:
+                    done = True
+                    break
+    pygame.time.wait(QUESTION_DELAY)
 
 def log_entry(message):
     """
@@ -178,7 +223,7 @@ screen_height = info.current_h
 # Colors
 BLACK = (0, 0, 0)
 
-screen = pygame.display.set_mode((800, 600), pygame.RESIZABLE)  # Use a standard window size of 800x600
+screen = pygame.display.set_mode(SCREEN_SIZE, pygame.RESIZABLE)  # Use a standard window size of 800x600
 # Create a fullscreen display
 #screen = pygame.display.set_mode((screen_width, screen_height), pygame.FULLSCREEN)
 pygame.display.set_caption("Joystick Color Boxes")
