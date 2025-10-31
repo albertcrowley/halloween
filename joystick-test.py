@@ -13,10 +13,10 @@ MUSIC_END_EVENT = pygame.USEREVENT + 1
 DONE = -1
 ANSWER_FILE = "answers.txt"
 LOG_FILE = "log.txt"
-DEBOUNCE_TIME = 1500
+DEBOUNCE_TIME = 1000
 FADE_TIME = 500
-END_DELAY = 5000
-SCREEN_SIZE = (1920, 1080)
+END_DELAY = 8000
+SCREEN_SIZE = (500, 500)
 
 # Input constants
 LEFT = "LEFT"
@@ -51,10 +51,10 @@ answer_map = []
 
 
 
-real_questions.append({"image": "images/a-pokepop.jpg", "left": "pokemon", "right": "kpop",  "sound_right": "sounds/sound1.mp3", "sound_left": "sounds/sound2.mp3", "right_next": 1, "left_next": 1, "end_image_left": "images/pokemon-end.png", "end_image_right": "images/kpop-end.png"})
+real_questions.append({"image": "images/a-pokepop.jpg", "left": "pokemon", "right": "kpop",  "sound_right": "sounds/sound1.mp3", "sound_left": "sounds/sound2.mp3", "right_next": 1, "left_next": 1, "end_image_left": "images/end.png", "end_image_right": "images/end.png"})
 real_questions.append({"image": "images/a-chewycrunchy.jpg", "left": "chocolate", "right": "chewy", "sound_right": "sounds/sound3.mp3", "sound_left": "sounds/sound4.mp3", "left_next": 3, "right_next": 2})
-real_questions.append({"image": "images/a-soursweet.jpg", "left": "sour", "right": "sweet", "sound_right": "sounds/sound5.mp3", "sound_left": "sounds/sound6.mp3", "right_next": DONE, "left_next": DONE})
-real_questions.append({"image": "images/a-peanut.jpg", "left": "peanut", "right": "no-nuts", "sound_right": "sounds/sound7.mp3", "sound_left": "sounds/sound8.mp3", "right_next": DONE, "left_next": DONE})
+real_questions.append({"image": "images/b-soursweet.jpg", "left": "sour", "right": "sweet", "sound_right": "sounds/sound5.mp3", "sound_left": "sounds/sound6.mp3", "right_next": DONE, "left_next": DONE})
+real_questions.append({"image": "images/b-peanut.jpg", "left": "peanut", "right": "no-nuts", "sound_right": "sounds/sound7.mp3", "sound_left": "sounds/sound8.mp3", "right_next": DONE, "left_next": DONE})
 
 random_questions.append({"image": "images/Slide4.JPG"})
 random_questions.append({"image": "images/Slide5.JPG"})
@@ -296,7 +296,6 @@ def show_end_image(end_image):
     pygame.display.flip()
     pygame.time.wait(END_DELAY)
 
-
 def update_answers(answer_map):
     with open(ANSWER_FILE, 'w') as f:
         for answer in answer_map:
@@ -383,6 +382,9 @@ def showImage(file_name, fade_in=True, new_image = True, arrows=False):
             screen.blit(scaled_image, (x_pos, y_pos))
             if arrows: draw_arrows()
             pygame.display.flip()
+
+        for event in pygame.event.get():
+            pass
 
     except pygame.error as e:
         print(f"ERROR: Failed to load asset '{file_name}'. Skipping image update.")
