@@ -322,7 +322,7 @@ def playSound(file_name):
         print(f"ERROR: Failed to play sound '{selected_file}'. Skipping.")
         log_entry(f"ERROR: Failed to play sound '{selected_file}': {e}")
 
-def showImage(file_name, fade_in=True, new_image = True):
+def showImage(file_name, fade_in=True, new_image = True, arrows=False):
     """
     Loads, scales, and blits an image to the screen while maintaining aspect ratio,
     with fade out/in effects.
@@ -373,7 +373,7 @@ def showImage(file_name, fade_in=True, new_image = True):
             screen.fill(BLACK)
             new_surface.set_alpha(alpha)
             screen.blit(new_surface, (0, 0))
-            draw_arrows()
+            if arrows: draw_arrows()
             pygame.display.flip()
             pygame.time.delay(FADE_TIME // 51)  # Distribute fade time evenly
 
@@ -381,7 +381,7 @@ def showImage(file_name, fade_in=True, new_image = True):
         screen.fill(BLACK)
         if fade_in:
             screen.blit(scaled_image, (x_pos, y_pos))
-            draw_arrows()
+            if arrows: draw_arrows()
             pygame.display.flip()
 
     except pygame.error as e:
