@@ -14,7 +14,7 @@ DONE = -1
 ANSWER_FILE = "answers.txt"
 LOG_FILE = "log.txt"
 DEBOUNCE_TIME = 1000
-QUESTION_DELAY = 500
+FADE_TIME = 1000
 END_DELAY = 1000
 SCREEN_SIZE = (1920, 1080)
 
@@ -92,10 +92,7 @@ def wait_for_input(current_image_path):
                     if current_time - last_input_time >= DEBOUNCE_TIME:
                         print (f"cur {current_time} and last {last_input_time} and diff {current_time - last_input_time}")
                         last_input_time = current_time
-                        print (LEFT if event.key == pygame.K_LEFT else RIGHT)
                         return LEFT if event.key == pygame.K_LEFT else RIGHT
-                    else:
-                        print (f"REJECTED cur {current_time} and last {last_input_time} and diff {current_time - last_input_time}")
             elif event.type == pygame.VIDEORESIZE:
                 screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
                 showImage(current_image_path)
@@ -226,7 +223,6 @@ def ask_random():
     if action == QUIT:
         return QUIT
 
-    pygame.time.wait(QUESTION_DELAY)
     return PROCEED
 
 
@@ -278,16 +274,13 @@ def playSound(file_name):
 
 def showImage(file_name):
     """
-    Loads, scales, and blits an image to the screen while maintaining aspect ratio.
-    The image will be scaled to fit as large as possible within the screen bounds.
-    Includes error handling for missing or corrupted files.
+    Loads, scales, and blits an image to the screen while maintaining aspect ratio,
+    with fade out/in effects.
     """
     global screen
     try:
-        # Attempt to load the image
+        # Load and scale the new image
         original_image = pygame.image.load(file_name).convert()
-
-        # Get the dimensions
         image_width, image_height = original_image.get_size()
         screen_width, screen_height = screen.get_size()
 
@@ -307,30 +300,45 @@ def showImage(file_name):
         x_pos = (screen_width - new_width) // 2
         y_pos = (screen_height - new_height) // 2
 
+        # Create a copy of the current screen for fade out
+        old_screen = screen.copy()
+
+        # Fade out
+        for alpha in range(255, 0, -5):  # Gradually decrease alpha
+            screen.fill(BLACK)
+            old_screen.set_alpha(alpha)
+            screen.blit(old_screen, (0, 0))
+            pygame.display.flip()
+            pygame.time.delay(FADE_TIME // 51)  # Distribute fade time evenly
+
         # Clear the screen
         screen.fill(BLACK)
 
-        # Blit the scaled image at the centered position
+        # Create a surface for the new image with alpha
+        new_surface = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
+        new_surface.fill(BLACK)
+        new_surface.blit(scaled_image, (x_pos, y_pos))
+
+        # Fade in
+        for alpha in range(0, 256, 5):  # Gradually increase alpha
+            screen.fill(BLACK)
+            new_surface.set_alpha(alpha)
+            screen.blit(new_surface, (0, 0))
+            pygame.display.flip()
+            pygame.time.delay(FADE_TIME // 51)  # Distribute fade time evenly
+
+        # Final display at full alpha
+        screen.fill(BLACK)
         screen.blit(scaled_image, (x_pos, y_pos))
         pygame.display.flip()
 
     except pygame.error as e:
         print(f"ERROR: Failed to load asset '{file_name}'. Skipping image update.")
         log_entry(f"ERROR: Failed to load asset '{file_name}': {e}")
-        screen.fill(BLACK)  # Still fill screen black
-        pygame.display.flip()  # And flip to show the blank screen
+        screen.fill(BLACK)
+        pygame.display.flip()
         return
 
-
-# def showImage(file_name):
-#     original_image = pygame.image.load(file_name).convert()
-#
-#     # 1. Scale the image to the exact screen size
-#     scaled_image = pygame.transform.scale(original_image, screen.get_size())
-#
-#     # 2. Blit the scaled image
-#     screen.blit(scaled_image, (0, 0))
-#     pygame.display.flip()
 
 
 # Initialize pygame
