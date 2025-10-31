@@ -61,6 +61,9 @@ def game_loop():
     question_index = 0
     end_image = None
 
+
+    attract_screen()
+
     ask_random()
 
     while question_index != DONE:
@@ -117,6 +120,19 @@ def game_loop():
     log_entry(f"Answer map: {answer_map}")
     show_end_image(end_image)
     return True
+
+def attract_screen():
+    screen.fill(BLACK)
+    showImage("images/attract.png")
+    pygame.display.flip()
+    done = False
+    while not done:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT or event.key == pygame.K_q:
+                    done = True
+                    break
+
 
 def ask_random():
     global real_questions
@@ -193,25 +209,46 @@ def playSound(file_name):
 
 def showImage(file_name):
     """
-    Loads, scales, and blits an image to the screen.
+    Loads, scales, and blits an image to the screen while maintaining aspect ratio.
+    The image will be scaled to fit as large as possible within the screen bounds.
     Includes error handling for missing or corrupted files.
     """
     global screen
     try:
-        # Attempt to load the image. This is where the crash usually happens.
+        # Attempt to load the image
         original_image = pygame.image.load(file_name).convert()
 
-        # 1. Scale the image to the exact screen size
-        scaled_image = pygame.transform.scale(original_image, screen.get_size())
+        # Get the dimensions
+        image_width, image_height = original_image.get_size()
+        screen_width, screen_height = screen.get_size()
 
-        # 2. Blit the scaled image
-        screen.blit(scaled_image, (0, 0))
+        # Calculate the scaling ratio while maintaining aspect ratio
+        width_ratio = screen_width / image_width
+        height_ratio = screen_height / image_height
+        scale_ratio = min(width_ratio, height_ratio)
+
+        # Calculate new dimensions
+        new_width = int(image_width * scale_ratio)
+        new_height = int(image_height * scale_ratio)
+
+        # Scale the image
+        scaled_image = pygame.transform.scale(original_image, (new_width, new_height))
+
+        # Calculate position to center the image
+        x_pos = (screen_width - new_width) // 2
+        y_pos = (screen_height - new_height) // 2
+
+        # Clear the screen
+        screen.fill(BLACK)
+
+        # Blit the scaled image at the centered position
+        screen.blit(scaled_image, (x_pos, y_pos))
         pygame.display.flip()
 
     except pygame.error as e:
         print(f"ERROR: Failed to load asset '{file_name}'. Skipping image update.")
         screen.fill(BLACK)
-        return  #
+        return
 
 # def showImage(file_name):
 #     original_image = pygame.image.load(file_name).convert()
