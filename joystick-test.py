@@ -69,6 +69,7 @@ def wait_for_input(current_image_path):
     Handles fullscreen toggling and quitting.
     Returns LEFT, RIGHT, or QUIT.
     Implements debouncing with DEBOUNCE_TIME milliseconds that persists across screens.
+    Supports both keyboard and joystick input.
     """
     global screen, is_fullscreen, windowed_size, last_input_time
 
@@ -92,13 +93,21 @@ def wait_for_input(current_image_path):
                 elif event.key in (pygame.K_LEFT, pygame.K_RIGHT):
                     # Check if enough time has passed since last input
                     if current_time - last_input_time >= DEBOUNCE_TIME:
-                        print (f"cur {current_time} and last {last_input_time} and diff {current_time - last_input_time}")
+                        print(f"cur {current_time} and last {last_input_time} and diff {current_time - last_input_time}")
                         last_input_time = current_time
                         return LEFT if event.key == pygame.K_LEFT else RIGHT
+            elif event.type == pygame.JOYBUTTONDOWN:
+                # Check if enough time has passed since last input
+                if current_time - last_input_time >= DEBOUNCE_TIME:
+                    if event.button == 0:  # Button 1 (index 0)
+                        last_input_time = current_time
+                        return LEFT
+                    elif event.button == 1:  # Button 2 (index 1)
+                        last_input_time = current_time
+                        return RIGHT
             elif event.type == pygame.VIDEORESIZE:
                 screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
                 showImage(current_image_path)
-
 
 def wait_for_any_key(current_image_path):
     """
